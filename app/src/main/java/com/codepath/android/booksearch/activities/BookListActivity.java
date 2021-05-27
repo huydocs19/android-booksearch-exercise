@@ -1,13 +1,20 @@
 package com.codepath.android.booksearch.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import androidx.appcompat.widget.SearchView;
+
+import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
+import androidx.appcompat.widget.Toolbar;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.MenuItemCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -19,6 +26,7 @@ import com.codepath.asynchttpclient.callback.JsonHttpResponseHandler;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.parceler.Parcels;
 
 import java.util.ArrayList;
 
@@ -30,31 +38,47 @@ public class BookListActivity extends AppCompatActivity {
     private BookAdapter bookAdapter;
     private BookClient client;
     private ArrayList<Book> abooks;
+    ProgressBar pb;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_book_list);
 
+        // Find the toolbar view inside the activity layout
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_list_activity);
+        // Sets the Toolbar to act as the ActionBar for this Activity window.
+        // Make sure the toolbar exists in the activity and is not null
+        setSupportActionBar(toolbar);
+
         rvBooks = findViewById(R.id.rvBooks);
         abooks = new ArrayList<>();
+
+        // on some click or some loading we need to wait for...
+        pb = (ProgressBar) findViewById(R.id.pbLoading);
+
+
+
 
         // Initialize the adapter
         bookAdapter = new BookAdapter(this, abooks);
         bookAdapter.setOnItemClickListener(new BookAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(View itemView, int position) {
-                Toast.makeText(
-                        BookListActivity.this,
-                        "An item at position " + position + " clicked!",
-                        Toast.LENGTH_SHORT).show();
 
                 // Handle item click here:
                 // Create Intent to start BookDetailActivity
+                Intent intent = new Intent(BookListActivity.this, BookDetailActivity.class);
                 // Get Book at the given position
+                Book book = abooks.get(position);
                 // Pass the book into details activity using extras
+                intent.putExtra("book", Parcels.wrap(book));
+                startActivity(intent);
             }
         });
+
+
+
 
         // Attach the adapter to the RecyclerView
         rvBooks.setAdapter(bookAdapter);
@@ -62,8 +86,7 @@ public class BookListActivity extends AppCompatActivity {
         // Set layout manager to position the items
         rvBooks.setLayoutManager(new LinearLayoutManager(this));
 
-        // Fetch the data remotely
-        fetchBooks("Oscar Wilde");
+        rvBooks.setVisibility(View.GONE);
     }
 
     // Executes an API call to the OpenLibrary search endpoint, parses the results
@@ -88,6 +111,9 @@ public class BookListActivity extends AppCompatActivity {
                         for (Book book : books) {
                             abooks.add(book); // add book through the adapter
                         }
+                        // run a background job and once complete
+                        pb.setVisibility(ProgressBar.INVISIBLE);
+                        rvBooks.setVisibility(View.VISIBLE);
                         bookAdapter.notifyDataSetChanged();
                     }
                 } catch (JSONException e) {
@@ -120,7 +146,30 @@ public class BookListActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_search) {
+            final SearchView searchView = (SearchView) MenuItemCompat.getActionView(item);
+            searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+                @Override
+                public boolean onQueryTextSubmit(String query) {
+                    pb.setVisibility(ProgressBar.VISIBLE);
+                    // perform query here
+                    // Fetch the data remotely
+                    fetchBooks(query);
+
+
+                    // workaround to avoid issues with some emulators and keyboard devices firing twice if a keyboard enter is used
+                    // see https://code.google.com/p/android/issues/detail?id=24599
+                    searchView.clearFocus();
+
+                    return true;
+                }
+
+                @Override
+                public boolean onQueryTextChange(String newText) {
+                    return false;
+                }
+            });
+
             return true;
         }
 
