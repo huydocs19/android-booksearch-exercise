@@ -1,6 +1,7 @@
 package com.codepath.android.booksearch.models;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -14,6 +15,8 @@ public class Book {
     private String openLibraryId;
     private String author;
     private String title;
+    private String publishYear;
+    private String publishers;
 
     public String getOpenLibraryId() {
         return openLibraryId;
@@ -25,6 +28,14 @@ public class Book {
 
     public String getAuthor() {
         return author;
+    }
+
+    public String getPublishYear() {
+        return publishYear;
+    }
+
+    public String getPublishers() {
+        return publishers;
     }
 
     // Get book cover from covers API
@@ -46,6 +57,9 @@ public class Book {
             }
             book.title = jsonObject.has("title_suggest") ? jsonObject.getString("title_suggest") : "";
             book.author = getAuthor(jsonObject);
+            book.publishYear = jsonObject.has("first_publish_year") ? jsonObject.getString("first_publish_year") : "";
+            book.publishers = getPublisher(jsonObject);
+
         } catch (JSONException e) {
             e.printStackTrace();
             return null;
@@ -64,6 +78,15 @@ public class Book {
                 authorStrings[i] = authors.getString(i);
             }
             return TextUtils.join(", ", authorStrings);
+        } catch (JSONException e) {
+            return "";
+        }
+    }
+    // Return comma separated author list when there is more than one author
+    private static String getPublisher(final JSONObject jsonObject) {
+        try {
+            final JSONArray allPublishers = jsonObject.getJSONArray("publisher");
+            return allPublishers.getString(0);
         } catch (JSONException e) {
             return "";
         }

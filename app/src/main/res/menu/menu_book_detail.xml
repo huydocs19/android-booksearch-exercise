@@ -4,8 +4,9 @@
     tools:context="com.codepath.android.booksearch.activities.BookDetailActivity">
     <item
         android:id="@+id/menu_item_share"
-        app:showAsAction="ifRoom"
         android:title="Share"
-        app:actionProviderClass="androidx.appcompat.widget.ShareActionProvider" />
+        app:actionProviderClass="androidx.appcompat.widget.ShareActionProvider"
+        app:showAsAction="ifRoom" />
 
 </menu>
+

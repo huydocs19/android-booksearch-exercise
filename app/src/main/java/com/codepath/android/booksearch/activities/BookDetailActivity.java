@@ -7,7 +7,6 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.ShareActionProvider;
 import androidx.appcompat.widget.Toolbar;
@@ -15,7 +14,6 @@ import androidx.core.content.FileProvider;
 import androidx.core.view.MenuItemCompat;
 
 import android.os.Environment;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
@@ -40,6 +38,8 @@ public class BookDetailActivity extends AppCompatActivity {
     private ImageView ivBookCover;
     private TextView tvTitle;
     private TextView tvAuthor;
+    private TextView tvPublisher;
+    private TextView tvPublishYear;
     private ShareActionProvider miShareAction;
     private Intent shareIntent;
 
@@ -59,6 +59,8 @@ public class BookDetailActivity extends AppCompatActivity {
         ivBookCover = (ImageView) findViewById(R.id.ivBookCover);
         tvTitle = (TextView) findViewById(R.id.tvTitle);
         tvAuthor = (TextView) findViewById(R.id.tvAuthor);
+        tvPublisher = (TextView) findViewById(R.id.tvPublisher);
+        tvPublishYear = (TextView) findViewById(R.id.tvPublishYear);
 
         // Extract book object from intent extras
         Book book = (Book) Parcels.unwrap(getIntent().getParcelableExtra("book"));
@@ -86,6 +88,9 @@ public class BookDetailActivity extends AppCompatActivity {
 
         tvTitle.setText(book.getTitle());
         tvAuthor.setText(book.getAuthor());
+        tvPublisher.setText(book.getPublishers());
+        tvPublishYear.setText("Originally Published On " + book.getPublishYear());
+
         getSupportActionBar().setTitle(book.getTitle());
     }
 
@@ -112,7 +117,6 @@ public class BookDetailActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.menu_item_share) {
-            Log.d("Share", "Click");
             return true;
         }
 
@@ -135,6 +139,7 @@ public class BookDetailActivity extends AppCompatActivity {
         if (miShareAction != null && shareIntent != null)
             miShareAction.setShareIntent(shareIntent);
     }
+
     // Method when launching drawable within Glide
     public Uri getBitmapFromDrawable(Bitmap bmp){
 
